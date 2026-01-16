@@ -1,0 +1,46 @@
+hostname SW1_3.Kat
+spanning-tree mode rapid-pvst
+
+! Vlanları burada da oluşturuyoruz (VTP kullanmıyoruz, manuel girmek en sağlamıdır)
+vlan 10
+ name IT_Departmani
+vlan 40
+ name Yonetim
+vlan 70
+ name IP_Phones
+vlan 80
+ name Printers
+vlan 99
+ name Yonetim_VLAN
+exit
+
+! --- UPLINK AYARI (Backbone'a giden kablo) ---
+interface GigabitEthernet0/1
+ description Backbone_Baglantisi
+ switchport mode trunk
+ switchport trunk allowed vlan 1,10,40,70,80,99
+ no shutdown
+ exit
+
+! --- KULLANICI PORTLARI ÖRNEK YAPILANDIRMA ---
+! Port 1-10 arasını IT ekibine ayıralım (PC + Telefon takılabilir)
+interface range FastEthernet0/1-10
+ description IT_PC_ve_Telefonlari
+ switchport mode access
+ switchport access vlan 10
+ ! Telefon takılırsa sesi VLAN 70'e atacak:
+ switchport voice vlan 70
+ ! Spanning Tree Portfast: PC takılan portlarda 30sn bekleme yapmaz, hemen açılır.
+ spanning-tree portfast
+ exit
+
+! Port 11-20 arasını Yönetim ekibine ayıralım
+interface range FastEthernet0/11-20
+ description Yonetim_PC
+ switchport mode access
+ switchport access vlan 40
+ switchport voice vlan 70
+ spanning-tree portfast
+ exit
+
+ --------------------------------------------------------------------------------------

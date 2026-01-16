@@ -1,0 +1,178 @@
+! --- GENEL AYARLAR ---
+hostname Backbone_SW
+! Spanning Tree modunu Rapid-PVST yapıyoruz. (Daha hızlı toparlanma sağlar - Best Practice)
+spanning-tree mode rapid-pvst
+
+! --- VLAN OLUŞTURMA ---
+! Tek tek isimleri tanımlıyoruz ki karışıklık olmasın
+vlan 10
+ name IT_Departmani
+vlan 20
+ name IK_Departmani
+vlan 30
+ name Muhasebe
+vlan 40
+ name Yonetim
+vlan 50
+ name Lablar
+vlan 60
+ name Guvenlik
+vlan 70
+ name IP_Phones
+vlan 80
+ name Printers
+vlan 90
+ name Guest_Wifi
+vlan 99
+ name Yonetim_VLAN
+exit
+
+! --- TRUNK PORT AYARLARI (Alt Switchlere Gidenler) ---
+! 3650 bir L3 switch olduğu için trunk kapsüllemesini manuel seçmeliyiz.
+interface range GigabitEthernet 1/0/2-4
+ description Alt_Switchlere_Uplink
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ ! Güvenlik için sadece kullandığımız VLAN ların geçmesine izin veriyoruz
+ switchport trunk allowed vlan 1,10,20,30,40,50,60,70,80,90,99
+ ! Spanning Tree protokolünün bu portlarda gereksiz beklemesini önlemiyoruz çünkü burası switch-switch bağlantısı.
+ no shutdown
+ exit
+
+! --- KULLANILMAYAN PORTLARI KAPATMA (GÜVENLİK) ---
+! Geri kalan portları kapatmak iyi bir alışkanlıktır.
+interface range GigabitEthernet 1/0/5-24
+ description Bosta
+ shutdown
+ exit
+-------------------------------------------------------------------------------------
+
+
+! --- ADIM 1: IP ROUTINGİ AKTİF ET (EN ÖNEMLİ KOMUT) ---
+! L3 Switchlerde bu komut girilmezse switch router gibi davranmaz.
+ip routing
+
+! --- ADIM 2: DHCP ÇAKIŞMALARINI ÖNLEME ---
+! Her VLANın ilk 10 IPsini dağıtma diyoruz. Bunları sunuculara, yazıcılara ve switchlere elle veririz.
+ip dhcp excluded-address 192.168.10.1 192.168.10.10
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+ip dhcp excluded-address 192.168.30.1 192.168.30.10
+ip dhcp excluded-address 192.168.40.1 192.168.40.10
+ip dhcp excluded-address 192.168.50.1 192.168.50.10
+ip dhcp excluded-address 192.168.60.1 192.168.60.10
+ip dhcp excluded-address 192.168.70.1 192.168.70.10
+ip dhcp excluded-address 192.168.80.1 192.168.80.10
+ip dhcp excluded-address 192.168.90.1 192.168.90.10
+ip dhcp excluded-address 192.168.99.1 192.168.99.10
+
+! --- ADIM 3: DHCP HAVUZLARINI OLUŞTURMA ---
+! PCler IP isterse bu havuzlardan vereceğiz.
+
+! VLAN 10 - IT
+ip dhcp pool IT_POOL
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.1
+ dns-server 8.8.8.8
+
+! VLAN 20 - IK
+ip dhcp pool IK_POOL
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ dns-server 8.8.8.8
+
+! VLAN 30 - Muhasebe
+ip dhcp pool MUHASEBE_POOL
+ network 192.168.30.0 255.255.255.0
+ default-router 192.168.30.1
+ dns-server 8.8.8.8
+
+! VLAN 40 - Yonetim
+ip dhcp pool YONETIM_POOL
+ network 192.168.40.0 255.255.255.0
+ default-router 192.168.40.1
+ dns-server 8.8.8.8
+
+! VLAN 50 - Lablar
+ip dhcp pool LAB_POOL
+ network 192.168.50.0 255.255.255.0
+ default-router 192.168.50.1
+ dns-server 8.8.8.8
+
+! VLAN 60 - Guvenlik
+ip dhcp pool GUVENLIK_POOL
+ network 192.168.60.0 255.255.255.0
+ default-router 192.168.60.1
+ dns-server 8.8.8.8
+
+! VLAN 70 - IP Phones (Voice)
+ip dhcp pool VOICE_POOL
+ network 192.168.70.0 255.255.255.0
+ default-router 192.168.70.1
+ option 150 ip 192.168.10.1
+ ! (Not: Option 150, telefonların santrali bulması içindir. Şimdilik Backbone IP si verdik.)
+
+! VLAN 80 - Corp WiFi
+ip dhcp pool WIFI_CORP_POOL
+ network 192.168.80.0 255.255.255.0
+ default-router 192.168.80.1
+ dns-server 8.8.8.8
+
+! VLAN 90 - Guest WiFi
+ip dhcp pool GUEST_POOL
+ network 192.168.90.0 255.255.255.0
+ default-router 192.168.90.1
+ dns-server 8.8.8.8
+
+! --- ADIM 4: SVI (GATEWAY) ARAYÜZLERİNİ AÇMA ---
+! Bu sanal arayüzler, o VLANın "Çıkış Kapısı"dır.
+
+interface vlan 10
+ description Gateway_IT
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+
+interface vlan 20
+ description Gateway_IK
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+
+interface vlan 30
+ description Gateway_Muhasebe
+ ip address 192.168.30.1 255.255.255.0
+ no shutdown
+
+interface vlan 40
+ description Gateway_Yonetim
+ ip address 192.168.40.1 255.255.255.0
+ no shutdown
+
+interface vlan 50
+ description Gateway_Lablar
+ ip address 192.168.50.1 255.255.255.0
+ no shutdown
+
+interface vlan 60
+ description Gateway_Guvenlik
+ ip address 192.168.60.1 255.255.255.0
+ no shutdown
+
+interface vlan 70
+ description Gateway_Voice
+ ip address 192.168.70.1 255.255.255.0
+ no shutdown
+
+interface vlan 80
+ description Gateway_CorpWifi
+ ip address 192.168.80.1 255.255.255.0
+ no shutdown
+
+interface vlan 90
+ description Gateway_GuestWifi
+ ip address 192.168.90.1 255.255.255.0
+ no shutdown
+
+interface vlan 99
+ description Management_IP
+ ip address 192.168.99.1 255.255.255.0
+ no shutdown
+ exit

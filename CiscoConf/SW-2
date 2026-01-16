@@ -1,0 +1,39 @@
+hostname SW2_2.Kat
+spanning-tree mode rapid-pvst
+
+! Vlan tanımları
+vlan 20
+ name IK_Departmani
+vlan 30
+ name Muhasebe
+vlan 70
+ name IP_Phones
+vlan 80
+ name Printers
+exit
+
+! Uplink Ayarı
+interface GigabitEthernet0/1
+ description Backbone_Baglantisi
+ switchport mode trunk
+ switchport trunk allowed vlan 1,20,30,70,80,99
+ no shutdown
+ exit
+
+! Muhasebe Portları (1-10 arası)
+interface range FastEthernet0/1-10
+ description Muhasebe_PC
+ switchport mode access
+ switchport access vlan 30
+ switchport voice vlan 70
+ spanning-tree portfast
+ exit
+
+! İK Portları (11-20 arası)
+interface range FastEthernet0/11-20
+ description IK_PC
+ switchport mode access
+ switchport access vlan 20
+ switchport voice vlan 70
+ spanning-tree portfast
+ exit

@@ -1,0 +1,35 @@
+hostname SW3_Zemin
+spanning-tree mode rapid-pvst
+
+vlan 50
+ name Lablar
+vlan 60
+ name Guvenlik
+vlan 70
+ name IP_Phones
+exit
+
+! Uplink
+interface GigabitEthernet0/1
+ description Backbone_Baglantisi
+ switchport mode trunk
+ switchport trunk allowed vlan 1,50,60,70,99
+ no shutdown
+ exit
+
+! Lab Portları (1-15 arası)
+interface range FastEthernet0/1-15
+ description Lab_PC
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ exit
+
+! Güvenlik Portu (Son port 24 olsun)
+interface FastEthernet0/24
+ description Guvenlik_PC
+ switchport mode access
+ switchport access vlan 60
+ switchport voice vlan 70
+ spanning-tree portfast
+ exit
