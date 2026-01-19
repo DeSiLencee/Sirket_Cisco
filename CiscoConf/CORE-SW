@@ -176,3 +176,23 @@ interface vlan 99
  ip address 192.168.99.1 255.255.255.0
  no shutdown
  exit
+
+
+ -----------------------------------------------------------------------------------
+
+ conf t
+
+! --- ROUTER BAĞLANTISI (Layer 3 Port) ---
+interface GigabitEthernet1/0/1
+ description Router_Baglantisi_WAN
+ no switchport
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+ exit
+
+! --- DEFAULT ROUTE (Yönlendirme) ---
+! Bilmediğin her şeyi (0.0.0.0) Routera (10.0.0.1) gönder
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+
+end
+write

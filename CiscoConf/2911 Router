@@ -1,0 +1,40 @@
+enable
+conf t
+hostname Edge_Router
+
+! --- LAN TARAFI (Backbonea Bakan Yüz) ---
+interface GigabitEthernet0/0
+ description LAN_Gateway
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+ ! Bu porttan gelen paketler NAT işlemine girsin (Inside)
+ ip nat inside
+ exit
+
+! --- WAN TARAFI (İnternet/ISP Simülasyonu) ---
+interface GigabitEthernet0/1
+ description ISP_Internet
+ ! Gerçek hayatta burayı ISP verir. Biz temsili bir IP verelim.
+ ip address 88.88.88.2 255.255.255.0
+ no shutdown
+ ! Bu port NAT çıkış kapısıdır (Outside)
+ ip nat outside
+ exit
+
+! --- NAT AYARLARI (En Kritik Kısım) ---
+! 1. Adım: Kimlerin internete çıkmasına izin var? (Tüm VLAN bloklarımız)
+access-list 1 permit 192.168.0.0 0.0.255.255
+
+! 2. Adım: Listede izin verilenleri WAN IPsine maskele (Overload/PAT)
+ip nat inside source list 1 interface GigabitEthernet0/1 overload
+
+! --- ROUTING ---
+! Routera diyoruz ki: İnternete (0.0.0.0) gitmek için ISPye (88.88.88.1) git.
+! (Not: Packet Tracerda karşıda gerçek ISP olmadığı için bu komut simülasyonda hata vermez ama trafik bir yere gitmez. Test için Loopback kullanacağız.)
+ip route 0.0.0.0 0.0.0.0 88.88.88.1
+
+! --- TEST İÇİN SANAL İNTERNET ADRESİ ---
+! Google DNS simülasyonu için bir Loopback arayüzü açalım.
+interface Loopback0
+ ip address 8.8.8.8 255.255.255.255
+ exit
