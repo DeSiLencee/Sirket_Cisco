@@ -196,3 +196,37 @@ ip route 0.0.0.0 0.0.0.0 10.0.0.1
 
 end
 write
+
+--------------------------------------------------------------------------------------
+
+conf t
+
+! --- AP'lerin IP Alacağı Havuz ---
+ip dhcp pool MANAGEMENT_POOL
+ network 192.168.99.0 255.255.255.0
+ default-router 192.168.99.1
+ dns-server 8.8.8.8
+ ! WLC'nin IP adresini AP'lere duyuruyoruz (Option 43)
+ ! Hexadecimal olarak girilir ama PT bazen IP kabul eder. Etmezse bu satırı geçebilirsin.
+ option 43 ip 192.168.99.2
+ exit
+
+! --- WLC Cihazına Sabit IP Rezerve Edelim (Opsiyonel ama iyi pratik) ---
+! Bunu DHCP exclusion ile yapıyoruz, WLC'ye elle 192.168.99.2 vereceğiz.
+ip dhcp excluded-address 192.168.99.1 192.168.99.5
+
+end
+write
+
+----------------------------------------------------------------------------------------
+
+! Backbone Switch CLI
+conf t
+interface GigabitEthernet1/0/5
+ description WLC_Baglantisi
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 99
+ ! Native VLAN 99 yaptık çünkü WLC'nin yönetim IP'si VLAN 99'da olacak.
+ no shutdown
+ exit

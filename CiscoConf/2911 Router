@@ -38,3 +38,31 @@ ip route 0.0.0.0 0.0.0.0 88.88.88.1
 interface Loopback0
  ip address 8.8.8.8 255.255.255.255
  exit
+
+
+ -----------------------------------------------------------------------------------------
+
+ enable
+conf t
+
+! --- GERİ DÖNÜŞ ROTALARI (Static Routes) ---
+! Router'a içerideki VLAN'ların yerini öğretiyoruz.
+! Tek bir özet komutla tüm 192.168.x.x trafiğini Switch'e yönlendirebiliriz.
+
+ip route 192.168.0.0 255.255.0.0 10.0.0.2
+
+! Eğer yukarıdaki "Özet (Summary)" komut çalışmazsa veya sevmezsen,
+! aşağıdaki gibi tek tek de girebilirsin (Garanti Yöntem):
+! ip route 192.168.10.0 255.255.255.0 10.0.0.2
+! ip route 192.168.20.0 255.255.255.0 10.0.0.2
+! ip route 192.168.30.0 255.255.255.0 10.0.0.2
+! ip route 192.168.40.0 255.255.255.0 10.0.0.2
+! ip route 192.168.50.0 255.255.255.0 10.0.0.2
+! ip route 192.168.60.0 255.255.255.0 10.0.0.2
+! ip route 192.168.70.0 255.255.255.0 10.0.0.2
+! ip route 192.168.80.0 255.255.255.0 10.0.0.2
+! ip route 192.168.90.0 255.255.255.0 10.0.0.2
+! ip route 192.168.99.0 255.255.255.0 10.0.0.2
+
+end
+write
