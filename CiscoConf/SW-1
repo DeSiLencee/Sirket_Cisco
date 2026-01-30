@@ -44,3 +44,13 @@ interface range FastEthernet0/11-20
  exit
 
  --------------------------------------------------------------------------------------
+
+
+ conf t
+interface FastEthernet0/24
+ description AP_Baglantisi
+ switchport mode access
+ switchport access vlan 99
+ no shutdown
+end
+write

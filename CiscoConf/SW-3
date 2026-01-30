@@ -33,3 +33,12 @@ interface FastEthernet0/24
  switchport voice vlan 70
  spanning-tree portfast
  exit
+
+ conf t
+interface FastEthernet0/24
+ description AP_Baglantisi
+ switchport mode access
+ switchport access vlan 99
+ no shutdown
+end
+write
