@@ -230,3 +230,35 @@ interface GigabitEthernet1/0/5
  ! Native VLAN 99 yaptık çünkü WLC'nin yönetim IP'si VLAN 99'da olacak.
  no shutdown
  exit
+
+ --------------------------------------------------------------------------------------------
+ conf t
+
+! Şirket İçin Havuz
+ip dhcp pool Sirket
+ network 192.168.80.0 255.255.255.0
+ default-router 192.168.80.1
+ dns-server 8.8.8.8
+exit
+
+! Misafir İçin Havuz
+ip dhcp pool Misafir
+ network 192.168.90.0 255.255.255.0
+ default-router 192.168.90.1
+ dns-server 8.8.8.8
+exit
+
+! Çakışmayı önlemek için ilk IP'leri hariç tutalım
+ip dhcp excluded-address 192.168.80.1 192.168.80.10
+ip dhcp excluded-address 192.168.90.1 192.168.90.10
+
+--------------------------------------------------------------------------------------
+! (Buraya WLC'nin takılı olduğu port numarasını yaz)
+interface GigabitEthernet1/0/2 
+ description WLC_BAGLANTISI
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+end
+write

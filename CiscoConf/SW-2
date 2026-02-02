@@ -46,3 +46,31 @@ interface FastEthernet0/24
  no shutdown
 end
 write
+--------------------------------------------------------------------
+enable
+conf t
+
+! Önce VLAN'ları oluşturalım (Yoksa paketleri çöpe atar)
+vlan 80
+name Sirket
+vlan 90
+name Misafir
+vlan 99
+name Yonetim
+exit
+
+! Şimdi AP'nin ve Backbone'un takılı olduğu portları TRUNK yapalım
+! (Hangi portlar dolu bilmiyorsan 1'den 24'e kadar hepsini yapalım, garanti olsun)
+interface range FastEthernet0/1-24
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+! Gigabit portları varsa onları da yapalım (Genelde Backbone'a bunlar bağlıdır)
+interface range GigabitEthernet0/1-2
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+end
+write
